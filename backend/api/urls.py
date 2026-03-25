@@ -30,7 +30,5 @@ api_v1_router.register(
 
 urlpatterns = [
     path('', include(api_v1_router.urls)),
-    # path('', include('djoser.urls')),
-    # path('favorites/', views.FavoriteRecipesListView.as_view(), name='favorite'),
     path('auth/', include('djoser.urls.authtoken')),
 ]

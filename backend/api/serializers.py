@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
-from djoser.serializers import UserSerializer as DjoserUserSerializer, UserCreateSerializer
+from djoser.serializers import UserCreateSerializer
 from drf_extra_fields.fields import Base64ImageField
 
 from . import models
@@ -263,7 +263,7 @@ class FollowSerializer(serializers.ModelSerializer):
 
         import logging
         logger = logging.getLogger(__name__)
-        logger.error(f"=== get_recipes for {obj.username} ===")
+        logger.error(f"=== get_recipes for {obj.username}")
         logger.error(f"recipes_limit from context: {recipes_limit}")
         logger.error(f"recipes_limit type: {type(recipes_limit)}")
 
