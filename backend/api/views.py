@@ -120,7 +120,9 @@ class RecipeViewSet(viewsets.ModelViewSet):
     def download_shopping_cart(self, request):
         response = HttpResponse(content_type='text/plain')
         filename = f'shopping_list_{request.user.username}.txt'
-        response['Content-Disposition'] = f'attachment; filename="{filename}"'
+        response['Content-Disposition'] = (
+            f'attachment; filename="{filename}"'
+        )
 
         purchase, created = models.Purchase.objects.get_or_create(
             user=request.user
