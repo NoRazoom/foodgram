@@ -25,7 +25,7 @@ User = get_user_model()
 class RecipeViewSet(viewsets.ModelViewSet):
     """
     Вьюсет рецепта.
-    
+
     Переопределяет методы создания и обновления.
     """
 
