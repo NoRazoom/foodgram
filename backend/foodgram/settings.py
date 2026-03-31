@@ -26,7 +26,7 @@ SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-test-key-12345')
 
 DEBUG = os.getenv('SECRET_KEY', False)
 
-ALLOWED_HOSTS = ["localhost", "127.0.0.1", "web"]
+ALLOWED_HOSTS = ["localhost", "127.0.0.1", "web", "foodnyam.myvnc.com"]
 
 
 INSTALLED_APPS = [
