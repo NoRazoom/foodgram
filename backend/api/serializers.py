@@ -37,7 +37,7 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 class AvatarSerializer(serializers.ModelSerializer):
-    """"""
+    """Сериализатор аватарки"""
 
     avatar = Base64ImageField()
 
@@ -227,7 +227,7 @@ class RecipeReadSerializer(serializers.ModelSerializer):
 
 
 class RecipeShortSerializer(serializers.ModelSerializer):
-    """"""
+    """Сериализатор рецепта, упрощенный"""
 
     image = Base64ImageField()
 
@@ -237,7 +237,7 @@ class RecipeShortSerializer(serializers.ModelSerializer):
 
 
 class FollowSerializer(serializers.ModelSerializer):
-    """"""
+    """Сериализатор подписок"""
 
     email = serializers.ReadOnlyField()
     id = serializers.ReadOnlyField()

@@ -6,3 +6,7 @@ class FollowPageNumberPagination(PageNumberPagination):
     page_size_query_param = 'limit'
     page_size = 6
     max_page_size = 100
+
+
+class NoPagination(PageNumberPagination):
+    page_size = None

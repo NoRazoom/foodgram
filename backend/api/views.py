@@ -4,7 +4,6 @@ from django.contrib.auth import get_user_model
 from rest_framework.exceptions import NotAuthenticated
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.decorators import action
-from rest_framework.pagination import PageNumberPagination
 from django.shortcuts import get_object_or_404, redirect
 from django.http import HttpResponse
 from djoser.views import UserViewSet as DjoserUserViewSet
@@ -13,7 +12,7 @@ from django.core.exceptions import ValidationError
 
 from . import serializers, models
 from .filters import RecipeFilter
-from .paginators import FollowPageNumberPagination
+from .paginators import FollowPageNumberPagination, NoPagination
 from user.models import Follow
 import logging
 
@@ -23,11 +22,12 @@ logger = logging.getLogger(__name__)
 User = get_user_model()
 
 
-class NoPagination(PageNumberPagination):
-    page_size = None
-
-
 class RecipeViewSet(viewsets.ModelViewSet):
+    """
+    Вьюсет рецепта.
+    
+    Переопределяет методы создания и обновления.
+    """
 
     queryset = models.Recipe.objects.all()
     filter_backends = (DjangoFilterBackend,)
@@ -78,6 +78,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
         url_path='get-link',
     )
     def get_link(self, request, pk):
+        """Action для получения короткой ссылки"""
         recipe = self.get_object()
 
         short_url = f"{request.build_absolute_uri('/')}s/{recipe.id}/"
@@ -93,6 +94,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
         url_path='shopping_cart',
     )
     def shopping_cart(self, request, pk):
+        """Action для добавления и удаления товаров из корзины"""
         recipe = get_object_or_404(models.Recipe, id=pk)
         purchase, created = models.Purchase.objects.get_or_create(
             user=request.user
@@ -118,6 +120,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
             url_name='download_shopping_cart',
             url_path='download_shopping_cart',)
     def download_shopping_cart(self, request):
+        """Action для скачивания корзины с товарами"""
         response = HttpResponse(content_type='text/plain')
         filename = f'shopping_list_{request.user.username}.txt'
         response['Content-Disposition'] = (
@@ -156,6 +159,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
             url_name='favorite',
             url_path='favorite',)
     def favorite(self, request, pk):
+        """Action для добавления и удаления рецептов из избранного"""
         recipe = get_object_or_404(models.Recipe, id=pk)
         favourited, created = models.Saved.objects.get_or_create(
             user=request.user
@@ -177,6 +181,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
 
 
 class TagViewSet(viewsets.ModelViewSet):
+    """Вьюсет для тегов без пагинации"""
 
     serializer_class = serializers.TagSerializer
     queryset = models.Tag.objects.all()
@@ -185,7 +190,7 @@ class TagViewSet(viewsets.ModelViewSet):
 
 
 class IngredientViewSet(viewsets.ModelViewSet):
-    """"""
+    """Вьюсет для ингрибиентов без пагинации"""
 
     serializer_class = serializers.IngredientSerializer
     queryset = models.Ingredient.objects.all()
@@ -194,6 +199,7 @@ class IngredientViewSet(viewsets.ModelViewSet):
 
 
 class UserViewSet(DjoserUserViewSet):
+    """Вьюсет пользователей"""
 
     serializer_class = serializers.UserSerializer
 
@@ -222,6 +228,7 @@ class UserViewSet(DjoserUserViewSet):
         url_path='me/avatar',
     )
     def avatar(self, request, *args, **kwargs):
+        """Action для добавления и удаления аватара"""
         instance = request.user
 
         if request.method == 'PUT':
@@ -247,6 +254,7 @@ class UserViewSet(DjoserUserViewSet):
         url_path='subscribe',
     )
     def subscribe(self, request, id):
+        """Action для добавления и удаления пользователя из подписок"""
         person = get_object_or_404(User, pk=id)
         subscribes, created = Follow.objects.get_or_create(
             follower=request.user
@@ -273,7 +281,7 @@ class UserViewSet(DjoserUserViewSet):
         url_path='subscriptions'
     )
     def subscriptions(self, request):
-        # ОТЛАДКА
+        """Action для получения своих подписок"""
         logger.error("method subscriptions")
         logger.error(f"Query params: {request.query_params}")
         recipes_limit = request.query_params.get('recipes_limit')

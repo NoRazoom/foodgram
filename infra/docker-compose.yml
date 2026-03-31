@@ -40,7 +40,7 @@ services:
   nginx:
     image: norazoom/foodgram_nginx
     ports:
-      - "8000:80"
+      - "1000:80"
     volumes:
       - staticfiles:/staticfiles/
       - mediafiles:/media/
