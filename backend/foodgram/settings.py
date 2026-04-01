@@ -152,8 +152,8 @@ DJOSER = {
         'user': ['rest_framework.permissions.AllowAny'],
     },
     'SERIALIZERS': {
-        'user_create': 'api.serializers.RegistrationSerializer',  # для регистрации
-        'user': 'api.serializers.UserSerializer',               # для профиля
-        'current_user': 'api.serializers.UserSerializer',       # для текущего пользователя
+        'user_create': 'api.serializers.RegistrationSerializer',
+        'user': 'api.serializers.UserSerializer',
+        'current_user': 'api.serializers.UserSerializer',
     },
 }
