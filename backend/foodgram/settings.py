@@ -28,6 +28,9 @@ DEBUG = os.getenv('SECRET_KEY', False)
 
 ALLOWED_HOSTS = ["localhost", "127.0.0.1", "web", "foodnyam.myvnc.com"]
 
+CSRF_TRUSTED_ORIGINS = [
+    'https://foodnyam.myvnc.com',
+]
 
 INSTALLED_APPS = [
     'api.apps.ApiConfig',
