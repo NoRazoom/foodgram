@@ -1,3 +1,5 @@
+import logging
+
 from rest_framework import viewsets, status
 from rest_framework.response import Response
 from rest_framework.exceptions import NotAuthenticated
@@ -14,7 +16,6 @@ from . import serializers, models
 from .filters import RecipeFilter
 from .paginators import FollowPageNumberPagination, NoPagination
 from user.models import Follow
-import logging
 
 logger = logging.getLogger(__name__)
 
