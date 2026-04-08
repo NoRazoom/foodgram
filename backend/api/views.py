@@ -1,16 +1,16 @@
 import logging
 
-from rest_framework import viewsets, status
-from rest_framework.response import Response
-from rest_framework.exceptions import NotAuthenticated
-from rest_framework.permissions import IsAuthenticated, AllowAny
-from rest_framework.decorators import action
 from django.contrib.auth import get_user_model
 from django.shortcuts import get_object_or_404, redirect
 from django.http import HttpResponse
 from djoser.views import UserViewSet as DjoserUserViewSet
 from django_filters.rest_framework import DjangoFilterBackend
 from django.core.exceptions import ValidationError
+from rest_framework import viewsets, status
+from rest_framework.response import Response
+from rest_framework.exceptions import NotAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
+from rest_framework.decorators import action
 
 from . import serializers, models
 from .filters import RecipeFilter
