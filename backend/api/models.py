@@ -60,10 +60,11 @@ class Recipe(models.Model):
     cooking_time = models.IntegerField(
         validators=[MinValueValidator(1)]
     )
+    created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         default_related_name = 'recipe'
-        ordering = ['id']
+        ordering = ['-created_at']
 
     def __str__(self):
         return self.name
@@ -78,7 +79,7 @@ class Saved(models.Model):
         verbose_name='Пользователь',
         unique=True
     )
-    recipes = models.ManyToManyField(Recipe)
+    recipes = models.ManyToManyField(Recipe, related_name='saved')
 
 
 class Purchase(models.Model):
