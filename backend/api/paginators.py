@@ -9,4 +9,5 @@ class FollowPageNumberPagination(PageNumberPagination):
 
 
 class NoPagination(PageNumberPagination):
+    """Отключение пагинации"""
     page_size = None
