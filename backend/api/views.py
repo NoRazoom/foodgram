@@ -6,13 +6,14 @@ from django.http import HttpResponse
 from djoser.views import UserViewSet as DjoserUserViewSet
 from django_filters.rest_framework import DjangoFilterBackend
 from django.core.exceptions import ValidationError
+from django.db.models import Sum
 from rest_framework import viewsets, status
 from rest_framework.response import Response
-from rest_framework.exceptions import NotAuthenticated
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.decorators import action
 
-from . import serializers, models
+from recipe import models
+from . import serializers
 from .filters import RecipeFilter
 from .paginators import FollowPageNumberPagination, NoPagination
 from user.models import Follow
@@ -108,12 +109,11 @@ class RecipeViewSet(viewsets.ModelViewSet):
             serializer = serializers.RecipeShortSerializer(recipe)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-        elif request.method == 'DELETE':
-            if not purchase.recipes.filter(id=recipe.pk).exists():
-                return Response({'error': 'Рецепта в корзине нет'},
-                                status=status.HTTP_400_BAD_REQUEST)
-            purchase.recipes.remove(recipe)
-            return Response(status=status.HTTP_204_NO_CONTENT)
+        if not purchase.recipes.filter(id=recipe.pk).exists():
+            return Response({'error': 'Рецепта в корзине нет'},
+                            status=status.HTTP_400_BAD_REQUEST)
+        purchase.recipes.remove(recipe)
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
     @action(detail=False,
             methods=['get'],
@@ -131,20 +131,24 @@ class RecipeViewSet(viewsets.ModelViewSet):
         purchase, created = models.Purchase.objects.get_or_create(
             user=request.user
         )
-        ingredients_dict = dict()
-        for recipe in purchase.recipes.all():
-            recipe_ingredients = recipe.recipe_ingredient.all()
-            for ingredient in recipe_ingredients:
-                key = f"{ingredient.ingredient.name}"
-                measurement_unit = ingredient.ingredient.measurement_unit
-                if key in ingredients_dict:
-                    ingredients_dict[key]['amount'] += ingredient.amount
-                else:
-                    ingredients_dict[key] = {
-                        'name': ingredient.ingredient.name,
-                        'amount': ingredient.amount,
-                        'measurement_unit': measurement_unit
-                    }
+
+        ingredients = models.RecipeIngredient.objects.filter(
+            recipe__in=purchase.recipes.all()
+        ).values(
+            'ingredient__name',
+            'ingredient__measurement_unit'
+        ).annotate(
+            total_amount=Sum('amount')
+        ).order_by('ingredient__name')
+
+        ingredients_dict = {}
+        for ingredient in ingredients:
+            key = ingredient['ingredient__name']
+            ingredients_dict[key] = {
+                'name': ingredient['ingredient__name'],
+                'amount': ingredient['total_amount'],
+                'measurement_unit': ingredient['ingredient__measurement_unit']
+            }
 
         response.write('СПИСОК ПОКУПОК\n')
         response.write('=' * 50 + '\n\n')
@@ -173,12 +177,11 @@ class RecipeViewSet(viewsets.ModelViewSet):
             serializer = serializers.RecipeShortSerializer(recipe)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-        elif request.method == 'DELETE':
-            if not favourited.recipes.filter(id=recipe.pk).exists():
-                return Response({'error': 'Рецепта в избранном нет'},
-                                status=status.HTTP_400_BAD_REQUEST)
-            favourited.recipes.remove(recipe)
-            return Response(status=status.HTTP_204_NO_CONTENT)
+        if not favourited.recipes.filter(id=recipe.pk).exists():
+            return Response({'error': 'Рецепта в избранном нет'},
+                            status=status.HTTP_400_BAD_REQUEST)
+        favourited.recipes.remove(recipe)
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class TagViewSet(viewsets.ModelViewSet):
@@ -209,7 +212,6 @@ class UserViewSet(DjoserUserViewSet):
             return User.objects.all()
         if self.action == 'me' and self.request.user.is_authenticated:
             return User.objects.filter(id=self.request.user.id)
-        raise NotAuthenticated()
 
     @action(
         methods=['get'],
@@ -238,15 +240,15 @@ class UserViewSet(DjoserUserViewSet):
             serializer.is_valid(raise_exception=True)
             serializer.save()
             return Response(serializer.data)
-        elif request.method == 'DELETE':
-            if instance.avatar:
-                instance.avatar.delete()
-                instance.avatar = None
-                instance.save()
-                return Response(status=status.HTTP_204_NO_CONTENT)
-            return Response(
-                status=status.HTTP_404_NOT_FOUND
-            )
+
+        if instance.avatar:
+            instance.avatar.delete()
+            instance.avatar = None
+            instance.save()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        return Response(
+            status=status.HTTP_404_NOT_FOUND
+        )
 
     @action(
         methods=['post', 'delete'],
@@ -283,16 +285,10 @@ class UserViewSet(DjoserUserViewSet):
     )
     def subscriptions(self, request):
         """Action для получения своих подписок"""
-        logger.error("method subscriptions")
-        logger.error(f"Query params: {request.query_params}")
         recipes_limit = request.query_params.get('recipes_limit')
-        logger.error(f"recipes_limit: {recipes_limit}")
-        subs = Follow.objects.filter(follower=request.user)
-        users = []
-        for follow in subs:
-            following_users = follow.following.all()
-            users.extend(following_users)
-        users = list(set(users))
+        users = User.objects.filter(
+            follower__follower=request.user
+        ).distinct()
 
         paginator = FollowPageNumberPagination()
 

@@ -1,6 +1,6 @@
 from django.db import models
 from django.contrib.auth import get_user_model
-from django.core.validators import MinValueValidator
+from django.core.validators import MinValueValidator, MaxValueValidator
 
 
 User = get_user_model()
@@ -9,6 +9,10 @@ TAG_MAX_LENGTH = 50
 INGRIDIENT_MAX_LENGTH = 50
 MEASURE_MAX_LENGTH = 40
 RECIPE_NAME_MAX_LENGTH = 256
+MIN_COOKING_TIME = 1
+MAX_COOCKING_TIME = 32000
+MIN_AMOUNT = 1
+MAX_AMOUNT = 32000
 
 
 class Tag(models.Model):
@@ -16,6 +20,9 @@ class Tag(models.Model):
 
     name = models.CharField('Тэг', max_length=TAG_MAX_LENGTH)
     slug = models.SlugField('Слаг', unique=True)
+
+    class Meta:
+        ordering = ['name']
 
     def __str__(self):
         return self.name
@@ -30,6 +37,9 @@ class Ingredient(models.Model):
         max_length=MEASURE_MAX_LENGTH
     )
 
+    class Meta:
+        ordering = ['name']
+
     def __str__(self):
         return self.name
 
@@ -40,7 +50,8 @@ class Recipe(models.Model):
     author = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        verbose_name='Автор'
+        verbose_name='Автор',
+        related_name='recipes'
     )
     ingredients = models.ManyToManyField(
         Ingredient,
@@ -57,8 +68,11 @@ class Recipe(models.Model):
         blank=True,
         null=True
     )
-    cooking_time = models.IntegerField(
-        validators=[MinValueValidator(1)]
+    cooking_time = models.PositiveSmallIntegerField(
+        validators=[
+            MinValueValidator(MIN_COOKING_TIME),
+            MaxValueValidator(MAX_COOCKING_TIME)
+        ]
     )
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -73,13 +87,16 @@ class Recipe(models.Model):
 class Saved(models.Model):
     """Сохраненные рецепты пользователя в избранное"""
 
-    user = models.ForeignKey(
+    user = models.OneToOneField(
         User,
         on_delete=models.CASCADE,
         verbose_name='Пользователь',
-        unique=True
+        related_name='owner'
     )
     recipes = models.ManyToManyField(Recipe, related_name='saved')
+
+    class Meta:
+        ordering = ['user']
 
 
 class Purchase(models.Model):
@@ -88,9 +105,13 @@ class Purchase(models.Model):
     user = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        verbose_name='Пользователь'
+        verbose_name='Пользователь',
+        related_name='customer'
     )
     recipes = models.ManyToManyField(Recipe, related_name='recipes')
+
+    class Meta:
+        ordering = ['user']
 
 
 class RecipeIngredient(models.Model):
@@ -107,4 +128,12 @@ class RecipeIngredient(models.Model):
         on_delete=models.CASCADE,
         verbose_name='Ингридиент'
     )
-    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    amount = models.PositiveSmallIntegerField(
+        validators=[
+            MinValueValidator(MIN_AMOUNT),
+            MaxValueValidator(MAX_AMOUNT)
+        ]
+    )
+
+    class Meta:
+        ordering = ['recipe']
