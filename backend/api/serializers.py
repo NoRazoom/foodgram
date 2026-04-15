@@ -121,7 +121,7 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
                   'name', 'text', 'cooking_time', 'author')
 
     def validate_cooking_time(self, value):
-        if value not in [models.MIN_COOKING_TIME, models.MAX_COOCKING_TIME]:
+        if value < models.MIN_COOKING_TIME or value > models.MAX_COOCKING_TIME:
             raise serializers.ValidationError("Недопустимое значение!")
 
     def add_ingredients(ingredients, recipe):
