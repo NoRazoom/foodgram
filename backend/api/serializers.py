@@ -124,6 +124,7 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
         if value < models.MIN_COOKING_TIME or value > models.MAX_COOCKING_TIME:
             raise serializers.ValidationError("Недопустимое значение!")
 
+    @staticmethod
     def add_ingredients(ingredients, recipe):
         recipes = []
         for ingredient in ingredients:
@@ -147,7 +148,7 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
         if tags:
             recipe.tags.set(tags)
 
-        self.add_ingredients(ingredients, recipe)
+        RecipeCreateSerializer.add_ingredients(ingredients, recipe)
 
         return recipe
 
@@ -164,7 +165,7 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
 
         if ingredients:
             instance.recipe_ingredient.all().delete()
-            self.add_ingredients(ingredients, instance)
+            RecipeCreateSerializer.add_ingredients(ingredients, instance)
 
         return instance
 
