@@ -126,21 +126,6 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
         if value < models.MIN_COOKING_TIME or value > models.MAX_COOCKING_TIME:
             raise serializers.ValidationError("Недопустимое значение!")
 
-    def add_ingredients(self, ingredients, recipe):
-        recipes = []
-        for ingredient in ingredients:
-            if models.Ingredient.objects.filter(
-                    id=ingredient.get('id')).exists():
-                recipes.append(models.RecipeIngredient(
-                    recipe=recipe,
-                    ingredient=models.Ingredient.objects.get(
-                        id=ingredient.get('id')),
-                    amount=ingredient.get('amount')))
-            else:
-                raise serializers.ValidationError(
-                    'Такого ингредиента не существут!:(')
-        models.RecipeIngredient.objects.bulk_create(recipes)
-
     def create(self, validated_data):
         ingredients = validated_data.pop('ingredients', [])
         tags = validated_data.pop('tags', [])
@@ -149,7 +134,18 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
         if tags:
             recipe.tags.set(tags)
 
-        self.add_ingredients(ingredients, recipe)
+        for ingredient in ingredients:
+            if models.Ingredient.objects.filter(
+                    id=ingredient.get('id')).exists():
+                models.RecipeIngredient.objects.create(
+                    recipe=recipe,
+                    ingredient=models.Ingredient.objects.get(
+                        id=ingredient.get('id')),
+                    amount=ingredient.get('amount')
+                )
+            else:
+                raise serializers.ValidationError(
+                    'Такого ингредиента не существут!:(')
 
         return recipe
 
@@ -166,7 +162,18 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
 
         if ingredients:
             instance.recipe_ingredient.all().delete()
-            self.add_ingredients(ingredients, instance)
+            for ingredient in ingredients:
+                if models.Ingredient.objects.filter(
+                        id=ingredient.get('id')).exists():
+                    models.RecipeIngredient.objects.create(
+                        recipe=instance,
+                        ingredient=models.Ingredient.objects.get(
+                            id=ingredient.get('id')),
+                        amount=ingredient.get('amount')
+                    )
+                else:
+                    raise serializers.ValidationError(
+                        'Такого ингредиента не существут!:(')
 
         return instance
 
