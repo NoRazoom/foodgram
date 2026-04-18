@@ -122,19 +122,6 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
         fields = ('ingredients', 'tags', 'image',
                   'name', 'text', 'cooking_time', 'author')
 
-    def validate_cooking_time(self, value):
-        if value is None or value == "":
-            raise serializers.ValidationError(
-                "Время приготовления обязательно!")
-
-        if isinstance(value, str):
-            try:
-                value = int(value)
-            except ValueError:
-                raise serializers.ValidationError("Время должно быть числом!")
-        if value < models.MIN_COOKING_TIME or value > models.MAX_COOCKING_TIME:
-            raise serializers.ValidationError("Недопустимое значение!")
-
     def add_ingredients(ingredients, recipe):
         recipes = []
         for ingredient in ingredients:
