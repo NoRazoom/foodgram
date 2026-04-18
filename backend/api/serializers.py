@@ -107,7 +107,7 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
     ingredients = RecipeIngredientCreateSerializer(many=True,
                                                    required=False,
                                                    write_only=True)
-    #  подставляем текущего пользовател
+    #  подставляем текущего пользователя
     author = serializers.HiddenField(default=serializers.CurrentUserDefault())
     tags = serializers.PrimaryKeyRelatedField(
         many=True,
