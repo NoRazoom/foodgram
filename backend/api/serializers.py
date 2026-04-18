@@ -123,7 +123,8 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
 
     def validate_cooking_time(self, value):
         if value is None or value == "":
-            raise serializers.ValidationError("Время приготовления обязательно!")
+            raise serializers.ValidationError(
+                "Время приготовления обязательно!")
 
         if isinstance(value, str):
             try:
