@@ -149,7 +149,7 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
         if tags:
             recipe.tags.set(tags)
 
-        RecipeCreateSerializer.add_ingredients(ingredients, recipe)
+        self.add_ingredients(ingredients, recipe)
 
         return recipe
 
