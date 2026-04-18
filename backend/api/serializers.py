@@ -88,6 +88,10 @@ class RecipeIngredientCreateSerializer(serializers.ModelSerializer):
         model = models.RecipeIngredient
         fields = ('id', 'amount')
 
+    def validate_amount(self, value): 
+        if value < models.MIN_AMOUNT or value > models.MAX_AMOUNT:
+            raise serializers.ValidationError("Недопустимое значение!")
+
 
 class RecipeCreateSerializer(serializers.ModelSerializer):
     """
@@ -102,7 +106,7 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
     ingredients = RecipeIngredientCreateSerializer(many=True,
                                                    required=False,
                                                    write_only=True)
-    #  подставляем текущего пользовател
+    #  подставляем текущего пользователя
     author = serializers.HiddenField(default=serializers.CurrentUserDefault())
     tags = serializers.PrimaryKeyRelatedField(
         many=True,
@@ -116,6 +120,25 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
         fields = ('ingredients', 'tags', 'image',
                   'name', 'text', 'cooking_time', 'author')
 
+    def validate_cooking_time(self, value):
+        if value < models.MIN_COOKING_TIME or value > models.MAX_COOCKING_TIME:
+            raise serializers.ValidationError("Недопустимое значение!")
+
+    def add_ingredients(ingredients, recipe):
+        recipes = []
+        for ingredient in ingredients:
+            if models.Ingredient.objects.filter(
+                    id=ingredient.get('id')).exists():
+                recipes.append(models.RecipeIngredient(
+                    recipe=recipe,
+                    ingredient=models.Ingredient.objects.get(
+                        id=ingredient.get('id')),
+                    amount=ingredient.get('amount')))
+            else:
+                raise serializers.ValidationError(
+                    'Такого ингредиента не существут!:(')
+        models.RecipeIngredient.objects.bulk_create(recipes)
+
     def create(self, validated_data):
         ingredients = validated_data.pop('ingredients', [])
         tags = validated_data.pop('tags', [])
@@ -124,18 +147,7 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
         if tags:
             recipe.tags.set(tags)
 
-        for ingredient in ingredients:
-            if models.Ingredient.objects.filter(
-                    id=ingredient.get('id')).exists():
-                models.RecipeIngredient.objects.create(
-                    recipe=recipe,
-                    ingredient=models.Ingredient.objects.get(
-                        id=ingredient.get('id')),
-                    amount=ingredient.get('amount')
-                )
-            else:
-                raise serializers.ValidationError(
-                    'Такого ингредиента не существут!:(')
+        self.add_ingredients(ingredients, recipe)
 
         return recipe
 
@@ -152,18 +164,7 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
 
         if ingredients:
             instance.recipe_ingredient.all().delete()
-            for ingredient in ingredients:
-                if models.Ingredient.objects.filter(
-                        id=ingredient.get('id')).exists():
-                    models.RecipeIngredient.objects.create(
-                        recipe=instance,
-                        ingredient=models.Ingredient.objects.get(
-                            id=ingredient.get('id')),
-                        amount=ingredient.get('amount')
-                    )
-                else:
-                    raise serializers.ValidationError(
-                        'Такого ингредиента не существут!:(')
+            self.add_ingredients(ingredients, instance)
 
         return instance
 
