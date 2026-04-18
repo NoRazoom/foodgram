@@ -88,11 +88,6 @@ class RecipeIngredientCreateSerializer(serializers.ModelSerializer):
         model = models.RecipeIngredient
         fields = ('id', 'amount')
 
-    def validate_amount(self, value):
-        value = int(value)
-        if value < models.MIN_AMOUNT or value > models.MAX_AMOUNT:
-            raise serializers.ValidationError("Недопустимое значение!")
-
 
 class RecipeCreateSerializer(serializers.ModelSerializer):
     """
