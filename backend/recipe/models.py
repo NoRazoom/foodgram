@@ -68,7 +68,7 @@ class Recipe(models.Model):
         blank=True,
         null=True
     )
-    cooking_time = models.IntegerField( 
+    cooking_time = models.IntegerField(
         validators=[MinValueValidator(1)]
     )
     created_at = models.DateTimeField(auto_now_add=True)
