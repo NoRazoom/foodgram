@@ -159,7 +159,7 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
         ingredients = validated_data.pop('ingredients', [])
         tags = validated_data.pop('tags', [])
 
-        print("VALIDATED_DATA after pop:", validated_data)
+        print("VALIDATED_DATA after pop: ", validated_data)
 
         recipe = models.Recipe.objects.create(**validated_data)
         if tags:
