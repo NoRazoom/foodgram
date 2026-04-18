@@ -122,7 +122,7 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
         fields = ('ingredients', 'tags', 'image',
                   'name', 'text', 'cooking_time', 'author')
 
-    def add_ingredients(ingredients, recipe):
+    def add_ingredients(self, ingredients, recipe):
         recipes = []
         for ingredient in ingredients:
             if models.Ingredient.objects.filter(
