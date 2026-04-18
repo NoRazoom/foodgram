@@ -213,7 +213,7 @@ class RecipeReadSerializer(serializers.ModelSerializer):
         request = self.context.get('request')
         if request and request.user.is_authenticated:
             if hasattr(request.user, 'owner'):
-                return request.user.owner.recipes.filter(id=obj.id).exists()
+                return request.user.owner.filter(recipe=obj).exists()
             return False
         return False
 
@@ -221,7 +221,7 @@ class RecipeReadSerializer(serializers.ModelSerializer):
         request = self.context.get('request')
         if request and request.user.is_authenticated:
             if hasattr(request.user, 'customer'):
-                return request.user.customer.recipes.filter(id=obj.id).exists()
+                return request.user.customer.filter(recipe=obj).exists()
             return False
         return False
 
