@@ -88,11 +88,6 @@ class RecipeIngredientCreateSerializer(serializers.ModelSerializer):
         model = models.RecipeIngredient
         fields = ('id', 'amount')
 
-    '''def validate_amount(self, value):
-        value = int(value)
-        if value < models.MIN_AMOUNT or value > models.MAX_AMOUNT:
-            raise serializers.ValidationError("Недопустимое значение!")'''
-
 
 class RecipeCreateSerializer(serializers.ModelSerializer):
     """
@@ -120,11 +115,6 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
         model = models.Recipe
         fields = ('ingredients', 'tags', 'image',
                   'name', 'text', 'cooking_time', 'author')
-
-    '''def validate_cooking_time(self, value):
-        value = int(value)
-        if value < models.MIN_COOKING_TIME or value > models.MAX_COOCKING_TIME:
-            raise serializers.ValidationError("Недопустимое значение!")'''
 
     def create(self, validated_data):
         ingredients = validated_data.pop('ingredients', [])
