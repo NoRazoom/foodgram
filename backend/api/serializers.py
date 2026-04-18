@@ -115,6 +115,7 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
         required=False
     )
     image = Base64ImageField()
+    cooking_time = serializers.IntegerField(required=True)
 
     class Meta:
         model = models.Recipe
@@ -150,16 +151,8 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
         models.RecipeIngredient.objects.bulk_create(recipes)
 
     def create(self, validated_data):
-        print("=" * 50)
-        print("=" * 50)
-        print("VALIDATED_DATA before pop:", validated_data)
-        print("cooking_time in validated_data:",
-              validated_data.get('cooking_time'))
-        print("=" * 50)
         ingredients = validated_data.pop('ingredients', [])
         tags = validated_data.pop('tags', [])
-
-        print("VALIDATED_DATA after pop: ", validated_data)
 
         recipe = models.Recipe.objects.create(**validated_data)
         if tags:
